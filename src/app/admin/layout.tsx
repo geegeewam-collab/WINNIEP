@@ -1,0 +1,13 @@
+import React from 'react';
+import { AdminSidebar } from '@/components/layout/AdminSidebar';
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-screen bg-winniep-muted">
+      <AdminSidebar activePath="/admin" />
+      <main className="flex-grow p-6 md:p-10 overflow-x-hidden">
+        {children}
+      </main>
+    </div>
+  );
+}

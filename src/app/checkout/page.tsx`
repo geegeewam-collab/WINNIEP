@@ -1,0 +1,148 @@
+import React, { useState } from 'react';
+import { useCart } from '@/context/CartContext';
+import { Button } from '@/components/ui/Button';
+import Link from 'next/link';
+
+export default function CheckoutPage() {
+  const { cart, cartTotal } = useCart();
+  const [step, setStep] = useState('details'); // 'details' | 'review' | 'confirmation'
+
+  // Business logic: Check if any item requires supplier confirmation
+  // For the mock, we'll simulate this if the cart has > 2 items or specific mock IDs
+  const requiresReview = cart.some(item => item.productId === '2' || item.productId === '6');
+
+  return (
+    <div className="w-full px-4 md:px-8 py-12 md:py-24 bg-winniep-ivory">
+      <div className="max-w-[1000px] mx-auto">
+        <nav className="flex text-xs text-winniep-textSecondary gap-2 mb-8">
+          <a href="/" className="hover:text-winniep-copper transition-colors">Home</a>
+          <span>/</span>
+          <a href="/cart" className="hover:text-winniep-copper transition-colors">Cart</a>
+          <span>/</span>
+          <span className="text-winniep-espresso font-medium">Checkout</span>
+        </nav>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          {/* Checkout Form */}
+          <div className="lg:col-span-2 space-y-12">
+            <section className="space-y-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 rounded-full bg-winniep-espresso text-white flex items-center justify-center text-sm font-bold">1</div>
+                <h2 className="text-2xl font-display font-bold text-winniep-espresso">Contact Details</h2>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase text-winniep-textSecondary tracking-wider">Full Name</label>
+                  <input type="text" className="w-full bg-white border border-winniep-border rounded-md px-4 py-3 text-sm focus:ring-2 focus:ring-winniep-copper outline-none" placeholder="Enter your name" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase text-winniep-textSecondary tracking-wider">Phone Number</label>
+                  <input type="tel" className="w-full bg-white border border-winniep-border rounded-md px-4 py-3 text-sm focus:ring-2 focus:ring-winniep-copper outline-none" placeholder="07..." />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <label className="text-xs font-bold uppercase text-winniep-textSecondary tracking-wider">Email (Optional)</label>
+                  <input type="email" className="w-full bg-white border border-winniep-border rounded-md px-4 py-3 text-sm focus:ring-2 focus:ring-winniep-copper outline-none" placeholder="email@example.com" />
+                </div>
+              </div>
+            </section>
+
+            <section className="space-y-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 rounded-full bg-winniep-espresso text-white flex items-center justify-center text-sm font-bold">2</div>
+                <h2 className="text-2xl font-display font-bold text-winniep-espresso">Delivery Address</h2>
+              </div>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase text-winniep-textSecondary tracking-wider">County</label>
+                    <select className="w-full bg-white border border-winniep-border rounded-md px-4 py-3 text-sm focus:ring-2 focus:ring-winniep-copper outline-none appearance-none">
+                      <option>Select County</option>
+                      <option>Nairobi</option>
+                      <option>Mombasa</option>
+                      <option>Kisumu</option>
+                      <option>Nakuru</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase text-winniep-textSecondary tracking-wider">Town/City</label>
+                    <input type="text" className="w-full bg-white border border-winniep-border rounded-md px-4 py-3 text-sm focus:ring-2 focus:ring-winniep-copper outline-none" placeholder="Enter town" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase text-winniep-textSecondary tracking-wider">Specific Delivery Instructions</label>
+                  <textarea rows={3} className="w-full bg-white border border-winniep-border rounded-md px-4 py-3 text-sm focus:ring-2 focus:ring-winniep-copper outline-none" placeholder="House number, landmark, etc." />
+                </div>
+              </div>
+            </section>
+
+            <div className="pt-8">
+              {requiresReview ? (
+                <div className="bg-amber-50 border border-amber-200 p-6 rounded-xl flex gap-4 items-start">
+                  <svg className="w-6 h-6 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.88m-13.88-4h13.88m-13.88-4h13.88" />
+                  </svg>
+                  <div>
+                    <h4 className="font-bold text-amber-800 mb-1">Order Review Required</h4>
+                    <p className="text-sm text-amber-700 leading-relaxed">
+                      Some items in your bag require supplier confirmation. We will verify availability and calculate your delivery fee before requesting payment.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-green-50 border border-green-200 p-6 rounded-xl flex gap-4 items-start">
+                  <svg className="w-6 h-6 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <div>
+                    <h4 className="font-bold text-green-800 mb-1">Fast Track Order</h4>
+                    <p className="text-sm text-green-700 leading-relaxed">
+                      All items are available. You can proceed to M-PESA payment immediately.
+                    </p>
+                  </div>
+                </div>
+              )}
+              <div className="mt-8">
+                <Button
+                  variant="primary"
+                  className="w-full py-4 text-lg"
+                  onClick={() => window.location.href = '/order-confirmation'}
+                >
+                  {requiresReview ? 'Submit Order Request' : 'Pay with M-PESA'}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Order Summary Sidebar */}
+          <div className="space-y-6">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-winniep-border sticky top-24">
+              <h3 className="text-xl font-display font-bold text-winniep-espresso mb-6">Order Summary</h3>
+              <div className="space-y-4 mb-6">
+                {cart.map(item => (
+                  <div key={item.productId} className="flex justify-between text-sm">
+                    <span className="text-winniep-textSecondary truncate max-w-[150px]">{item.name} x{item.quantity}</span>
+                    <span className="font-medium text-winniep-espresso">KSh {(item.price * item.quantity).toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t border-winniep-border pt-4 space-y-3">
+                <div className="flex justify-between text-sm text-winniep-textSecondary">
+                  <span>Subtotal</span>
+                  <span>KSh {cartTotal.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm text-winniep-textSecondary">
+                  <span>Delivery Fee</span>
+                  <span className="italic">{requiresReview ? 'TBD' : 'KSh 0 (Promo)'}</span>
+                </div>
+                <div className="flex justify-between items-center pt-3">
+                  <span className="font-bold text-winniep-espresso">Total</span>
+                  <span className="text-xl font-bold text-winniep-espresso">KSh {cartTotal.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
