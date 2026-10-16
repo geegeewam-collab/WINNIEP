@@ -1,5 +1,8 @@
+'use client';
+
 import React from 'react';
 import { Button } from '@/components/ui/Button';
+import { useCart } from '@/context/CartContext';
 
 interface ProductCardProps {
   product: {
@@ -13,6 +16,7 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const { addToCart } = useCart();
   const availabilityColors = {
     'Available': 'bg-green-100 text-green-800',
     'Supplier Confirmation': 'bg-amber-100 text-amber-800',
@@ -42,7 +46,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </p>
       </div>
 
-      <Button variant="primary" className="w-full py-2 text-sm">
+      <Button
+        variant="primary"
+        className="w-full py-2 text-sm"
+        disabled={product.availability === 'Unavailable'}
+        onClick={() =>
+          addToCart({ productId: product.id, name: product.name, price: product.price, image: product.image })
+        }
+      >
         Add to cart
       </Button>
     </div>

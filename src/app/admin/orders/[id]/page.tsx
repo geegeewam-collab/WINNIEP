@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/Button';
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -113,7 +113,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 <div className="space-y-3">
                   <label className="text-xs font-bold uppercase text-winniep-textSecondary tracking-wider">Set Delivery Fee (KSh)</label>
                   <div className="flex gap-2">
-                    <input type="number" className="flex-grow bg-winniep-ivory border border-winniep-border rounded-md px-3 py-2 text-sm" placeholder="0.00" />
+                    <input type="number" className="grow bg-winniep-ivory border border-winniep-border rounded-md px-3 py-2 text-sm" placeholder="0.00" />
                     <Button variant="primary" className="px-4 py-2 text-xs">Apply</Button>
                   </div>
                 </div>

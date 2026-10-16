@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/Button';
@@ -41,12 +43,12 @@ export default function CartPage() {
           <div className="lg:col-span-2 space-y-6">
             {cart.map((item) => (
               <div key={item.productId} className="bg-white p-6 rounded-xl shadow-sm border border-winniep-border flex gap-6">
-                <div className="w-24 h-24 bg-winniep-ivory rounded-lg overflow-hidden flex-shrink-0 relative">
+                <div className="w-24 h-24 bg-winniep-ivory rounded-lg overflow-hidden shrink-0 relative">
                   <div className="absolute inset-0 flex items-center justify-center text-winniep-espresso opacity-10 text-[10px] font-display italic">
                     Image
                   </div>
                 </div>
-                <div className="flex-grow flex flex-col justify-between">
+                <div className="grow flex flex-col justify-between">
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="font-medium text-winniep-espresso">{item.name}</h3>

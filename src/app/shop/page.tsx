@@ -50,7 +50,7 @@ export default function ShopPage() {
 
         {/* Filters Toolbar */}
         <div className="flex flex-wrap gap-4 mb-8">
-          <div className="flex-grow max-w-md relative">
+          <div className="grow max-w-md relative">
             <input
               type="text"
               placeholder="Search products..."

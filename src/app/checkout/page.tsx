@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/Button';
@@ -78,7 +80,7 @@ export default function CheckoutPage() {
             <div className="pt-8">
               {requiresReview ? (
                 <div className="bg-amber-50 border border-amber-200 p-6 rounded-xl flex gap-4 items-start">
-                  <svg className="w-6 h-6 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.88m-13.88-4h13.88m-13.88-4h13.88" />
                   </svg>
                   <div>
@@ -90,7 +92,7 @@ export default function CheckoutPage() {
                 </div>
               ) : (
                 <div className="bg-green-50 border border-green-200 p-6 rounded-xl flex gap-4 items-start">
-                  <svg className="w-6 h-6 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-green-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <div>

@@ -1,5 +1,13 @@
 import React from 'react';
+import type { Metadata } from 'next';
+import './globals.css';
 import { Header } from '@/components/layout/Header';
+import { CartProvider } from '@/context/CartContext';
+
+export const metadata: Metadata = {
+  title: 'WINNIEP',
+  description: 'Premium household products, electronics, and décor for the modern Kenyan home.',
+};
 
 export default function RootLayout({
   children,
@@ -8,10 +16,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <CartProvider>
-  <body className="min-h-screen flex flex-col">
+      <body className="min-h-screen flex flex-col">
+        <CartProvider>
         <Header />
-        <main className="flex-grow">
+        <main className="grow">
           {children}
         </main>
         <footer className="bg-winniep-espresso text-winniep-ivory py-12 px-4 md:px-8">
@@ -49,12 +57,12 @@ export default function RootLayout({
               </ul>
             </div>
           </div>
-          <div className="max-w-[1280px] mx-auto mt-12 pt-8 border-t border-winniep-sand border-opacity-20 text-center text-xs text-winniep-sand opacity-60">
+          <div className="max-w-[1280px] mx-auto mt-12 pt-8 border-t border-winniep-sand/20 text-center text-xs text-winniep-sand opacity-60">
             © {new Date().getFullYear()} WINNIEP. All rights reserved.
           </div>
         </footer>
+        </CartProvider>
       </body>
-  </CartProvider>
     </html>
   );
 }

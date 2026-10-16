@@ -134,7 +134,7 @@ export default function HomePage() {
             { title: 'Secure Payments', desc: 'Integrated M-PESA checkout for a seamless experience.' },
           ].map((service, idx) => (
             <div key={idx} className="flex gap-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-winniep-ivory rounded-full flex items-center justify-center text-winniep-copper">
+              <div className="shrink-0 w-10 h-10 bg-winniep-ivory rounded-full flex items-center justify-center text-winniep-copper">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>

@@ -7,7 +7,7 @@ export const AdminSidebar = ({ activePath }: { activePath: string }) => {
     { name: 'Products', path: '/admin/products', icon: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' },
     { name: 'Categories', path: '/admin/categories', icon: 'M4 6h16M4 12h16M4 18h16' },
     { name: 'Orders', path: '/admin/orders', icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z' },
-    { name: 'Settings', path: '/admin/settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.//9 2.54 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V4.317c0-1.756 2.924-1.756 3.35 0z' },
+    { name: 'Settings', path: '/admin/settings', icon: 'M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4' },
   ];
 
   return (
@@ -15,7 +15,7 @@ export const AdminSidebar = ({ activePath }: { activePath: string }) => {
       <div className="p-6 border-b border-winniep-border">
         <div className="text-xl font-display font-bold text-winniep-espresso tracking-tight">WINNIEP Admin</div>
       </div>
-      <nav className="flex-grow p-4 space-y-2">
+      <nav className="grow p-4 space-y-2">
         {navItems.map((item) => (
           <Link
             key={item.path}

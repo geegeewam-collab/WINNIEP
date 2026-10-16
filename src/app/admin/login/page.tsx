@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 export default function AdminLogin() {
@@ -28,7 +30,7 @@ export default function AdminLogin() {
             </div>
           </div>
           <button
-            className="w-full bg-winniep-espresso text-white py-3 rounded-md font-bold hover:bg-opacity-90 transition-colors"
+            className="w-full bg-winniep-espresso text-white py-3 rounded-md font-bold hover:bg-winniep-espresso/90 transition-colors"
             onClick={() => window.location.href = '/admin'}
           >
             Sign In
