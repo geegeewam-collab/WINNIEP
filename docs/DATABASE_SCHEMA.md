@@ -1,3 +1,5 @@
+> **Note:** the live schema is `supabase/schema.sql` — that file is the source of truth (orders now store `subtotal` + a nullable `delivery_fee`, products keep photos as a `images` JSON array, and there is a `store_settings` table). This document is the original design notes.
+
 # WINNIEP — DATABASE SCHEMA (PostgreSQL)
 
 ## 1. Core Entities

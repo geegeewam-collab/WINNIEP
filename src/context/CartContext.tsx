@@ -1,19 +1,21 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import type { Availability } from '@/lib/types';
 
-interface CartItem {
+export interface CartItem {
   productId: string;
+  slug?: string;
   name: string;
   price: number;
   image: string;
   quantity: number;
-  variant?: string;
+  availability?: Availability;
 }
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Omit<CartItem, 'quantity'>) => void;
+  addToCart: (product: Omit<CartItem, 'quantity'>, quantity?: number) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -22,55 +24,63 @@ interface CartContextType {
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+const STORAGE_KEY = 'winniep-cart';
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
 
-  // Persistence
+  // Load once on the client. Persisting is gated on `hydrated` so we never overwrite a saved cart with [].
   useEffect(() => {
-    const savedCart = localStorage.getItem('winniep-cart');
-    if (savedCart) {
-      try {
-        setCart(JSON.parse(savedCart));
-      } catch (e) {
-        console.error('Failed to load cart', e);
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) setCart(parsed);
       }
+    } catch (e) {
+      console.error('Failed to load cart', e);
     }
+    setHydrated(true);
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('winniep-cart', JSON.stringify(cart));
-  }, [cart]);
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+    } catch (e) {
+      console.error('Failed to save cart', e);
+    }
+  }, [cart, hydrated]);
 
-  const addToCart = (product: Omit<CartItem, 'quantity'>) => {
-    setCart(prev => {
-      const existing = prev.find(item => item.productId === product.productId);
+  const addToCart = (product: Omit<CartItem, 'quantity'>, quantity = 1) => {
+    const qty = Math.max(1, Math.min(50, Math.floor(quantity)));
+    setCart((prev) => {
+      const existing = prev.find((item) => item.productId === product.productId);
       if (existing) {
-        return prev.map(item =>
+        return prev.map((item) =>
           item.productId === product.productId
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, ...product, quantity: Math.min(50, item.quantity + qty) }
             : item
         );
       }
-      return [...prev, { ...product, quantity: 1 }];
+      return [...prev, { ...product, quantity: qty }];
     });
   };
 
   const removeFromCart = (productId: string) => {
-    setCart(prev => prev.filter(item => item.productId !== productId));
+    setCart((prev) => prev.filter((item) => item.productId !== productId));
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
-    if (quantity < 1) return;
-    setCart(prev => prev.map(item =>
-      item.productId === productId ? { ...item, quantity } : item
-    ));
+    if (quantity < 1 || quantity > 50) return;
+    setCart((prev) => prev.map((item) => (item.productId === productId ? { ...item, quantity } : item)));
   };
 
   const clearCart = () => setCart([]);
 
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
-  const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  const cartTotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   return (
     <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount }}>

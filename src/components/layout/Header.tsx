@@ -3,15 +3,17 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
+import { whatsappLink } from '@/lib/utils';
 
 const NAV_LINKS = [
   { label: 'Shop', href: '/shop' },
   { label: 'Household', href: '/category/household' },
   { label: 'Electronics', href: '/category/electronics' },
   { label: 'Décor', href: '/category/decor' },
+  { label: 'About', href: '/about' },
 ];
 
-export const Header = () => {
+export const Header = ({ whatsapp }: { whatsapp: string }) => {
   const { cartCount } = useCart();
   const [open, setOpen] = useState(false);
 
@@ -30,7 +32,23 @@ export const Header = () => {
           ))}
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1">
+          <Link href="/shop" className="p-2 text-winniep-espresso hover:text-winniep-copper transition-colors" aria-label="Search products">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </Link>
+          <a
+            href={whatsappLink(whatsapp, 'Hello WinnieP, I have a question.')}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden sm:block p-2 text-winniep-espresso hover:text-winniep-copper transition-colors"
+            aria-label="Chat on WhatsApp"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+          </a>
           <Link href="/cart" className="relative p-2 text-winniep-espresso hover:text-winniep-copper transition-colors" aria-label="Shopping bag">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -41,7 +59,6 @@ export const Header = () => {
               </span>
             )}
           </Link>
-
           <button
             type="button"
             className="md:hidden p-2 text-winniep-espresso"
