@@ -23,6 +23,7 @@ export async function POST(request: Request) {
         description: c.description || null,
         is_visible: c.is_visible ?? true,
         sort_order: c.sort_order ?? 0,
+        ...(c.image_url ? { image_url: c.image_url, image_public_id: c.image_public_id ?? null } : {}),
       })
       .select('*')
       .single();

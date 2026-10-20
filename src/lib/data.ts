@@ -1,5 +1,5 @@
 import { getDb } from './supabase';
-import type { Category, DeliveryRule, Product, StoreSettings } from './types';
+import type { Category, CategoryCard, DeliveryRule, Product, StoreSettings } from './types';
 
 const PRODUCT_SELECT = '*, category:categories(id, name, slug)';
 
@@ -123,4 +123,32 @@ export function getSettings(): Promise<StoreSettings> {
       delivery_rules: rules,
     };
   }, DEFAULT_SETTINGS);
+}
+
+/**
+ * Visible categories, each with a cover picture: the photo uploaded for the category if there is one,
+ * otherwise the main photo of its newest published product that has a photo, otherwise null (placeholder).
+ */
+export function getCategoryCards(): Promise<CategoryCard[]> {
+  return safe(async () => {
+    const categories = await getCategories();
+    if (categories.length === 0) return [];
+    const needFallback = categories.filter((c) => !c.image_url);
+    const fallback = new Map<string, string>();
+    if (needFallback.length > 0) {
+      const { data, error } = await getDb()
+        .from('products')
+        .select('category_id, images')
+        .eq('is_published', true)
+        .in('category_id', needFallback.map((c) => c.id))
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      for (const row of (data ?? []) as { category_id: string | null; images: { url: string }[] | null }[]) {
+        const url = Array.isArray(row.images) ? row.images[0]?.url : undefined;
+        if (row.category_id && url && !fallback.has(row.category_id)) fallback.set(row.category_id, url);
+      }
+    }
+    return categories.map((c) => ({ ...c, cover: c.image_url || fallback.get(c.id) || null }));
+  }, []);
 }

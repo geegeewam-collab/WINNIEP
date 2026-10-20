@@ -22,9 +22,14 @@ export interface Category {
   name: string;
   slug: string;
   description: string | null;
+  image_url?: string | null;
+  image_public_id?: string | null;
   is_visible: boolean;
   sort_order: number;
 }
+
+/** A category plus the picture the storefront should show for it. */
+export type CategoryCard = Category & { cover: string | null };
 
 export interface Product {
   id: string;

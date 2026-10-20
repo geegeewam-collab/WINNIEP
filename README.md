@@ -10,6 +10,8 @@ Next.js 16 · Tailwind v4 · Supabase (database) · Cloudinary (product photos) 
 ## One-time setup (≈15 minutes)
 
 ### 1. Supabase (database)
+> Already ran an older `schema.sql`? Just run `supabase/add_category_images.sql` once (it adds the category picture columns).
+
 1. Create a project at supabase.com.
 2. **SQL Editor → New query** → paste all of `supabase/schema.sql` → **Run**.
 3. **Project Settings → API**: copy the **Project URL** and the **`service_role` key** (keep it secret).
@@ -39,6 +41,8 @@ Needs a Safaricom Daraja app. Set `MPESA_ENV`, `MPESA_CONSUMER_KEY`, `MPESA_CONS
 ## Running the shop
 
 * **Add a product:** Admin → Products → *Add product*. Upload several photos (front/side/top) from your phone or computer; the first one is the main photo. Choose *In stock*, *Supplier confirmation* (you confirm with your supplier before the customer pays) or *Out of stock*.
+* **Home page slideshow:** star products with **☆ Feature** (in the Products list or the product form). Up to **10** featured products rotate in the home-page hero every 7 seconds (hover to pause). With none featured, the 10 newest products are shown.
+* **Category pictures:** Admin → Categories → *Upload* a picture for each collection. If you don't upload one, the shop uses the main photo of that category's newest published product.
 * **Update stock fast:** Admin → Products — change the stock dropdown or the Published switch right in the list.
 * **Orders:** Admin → Orders. For each order the page shows the next step (confirm availability → set delivery fee → message the customer on WhatsApp → they approve & pay → dispatch → delivered). The WhatsApp button is pre-filled with the right message and the customer's order link.
 * **Delivery prices:** Admin → Settings → add counties with a fee. Listed counties are priced automatically; any other county waits for your quote.

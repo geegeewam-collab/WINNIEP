@@ -153,6 +153,16 @@ export function ProductsManager({ initial }: { initial: Product[] }) {
                 </div>
 
                 <div className="flex gap-2">
+                  <button
+                    type="button"
+                    disabled={busyId === p.id}
+                    onClick={() => patch(p.id, { is_featured: !p.is_featured })}
+                    className={`${smallBtn} ${p.is_featured ? '!border-winniep-copper !text-winniep-copper' : ''}`}
+                    aria-pressed={p.is_featured}
+                    title="Featured products appear in the home page slideshow"
+                  >
+                    {p.is_featured ? '★ Featured' : '☆ Feature'}
+                  </button>
                   <Link href={`/admin/products/${p.id}`} className={smallBtn}>Edit</Link>
                   <a href={`/product/${p.slug}`} target="_blank" rel="noopener noreferrer" className={smallBtn}>Preview</a>
                   <button type="button" onClick={() => remove(p)} disabled={busyId === p.id} className={`${dangerBtn} !px-3 !py-1.5 !text-xs`}>Delete</button>

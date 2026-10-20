@@ -2,21 +2,26 @@ import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { ProductCard } from '@/components/ui/ProductCard';
+import { HeroSlideshow, type HeroSlide } from '@/components/ui/HeroSlideshow';
 import { ProductImage } from '@/components/ui/ProductImage';
-import { getCategories, getProducts, getSettings } from '@/lib/data';
-import { whatsappLink } from '@/lib/utils';
+import { getCategoryCards, getProducts, getSettings } from '@/lib/data';
+import { MAX_FEATURED_PRODUCTS, formatKsh, whatsappLink } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
   const [categories, featured, latest, settings] = await Promise.all([
-    getCategories(),
-    getProducts({ featured: true, limit: 8 }),
-    getProducts({ limit: 8 }),
+    getCategoryCards(),
+    getProducts({ featured: true, limit: MAX_FEATURED_PRODUCTS }),
+    getProducts({ limit: MAX_FEATURED_PRODUCTS }),
     getSettings(),
   ]);
   const products = featured.length > 0 ? featured : latest;
-  const heroImage = products.find((p) => p.images.length > 0)?.images[0]?.url ?? '';
+  const slides: HeroSlide[] = products
+    .filter((p) => p.images.length > 0)
+    .map((p) => ({ id: p.id, slug: p.slug, name: p.name, image: p.images[0].url, priceLabel: formatKsh(p.price) }));
+  // Second picture further down: prefer a different product, else another angle of the first, else the same photo.
+  const brandImage = products[1]?.images[0]?.url ?? products[0]?.images[1]?.url ?? products[0]?.images[0]?.url;
 
   return (
     <div className="flex flex-col w-full">
@@ -39,14 +44,8 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="relative aspect-[4/5] md:aspect-square w-full bg-winniep-sand rounded-2xl overflow-hidden shadow-xl">
-            {heroImage ? (
-              <ProductImage url={heroImage} alt="WinnieP featured product" width={1000} priority className="absolute inset-0 w-full h-full" />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-winniep-espresso opacity-30 font-display italic text-xl p-8 text-center">
-                WinnieP
-              </div>
-            )}
-            <div className="absolute inset-0 bg-gradient-to-tr from-winniep-espresso/20 to-transparent" />
+            <HeroSlideshow slides={slides} />
+            <div className="absolute inset-0 bg-gradient-to-tr from-winniep-espresso/10 to-transparent pointer-events-none" />
           </div>
         </div>
       </section>
@@ -63,10 +62,13 @@ export default async function HomePage() {
               {categories.map((cat) => (
                 <Link key={cat.id} href={`/category/${cat.slug}`} className="group block">
                   <div className="aspect-square bg-winniep-ivory rounded-xl overflow-hidden mb-4 relative">
-                    <div className="absolute inset-0 flex items-center justify-center text-winniep-espresso opacity-20 font-display italic text-2xl">
-                      {cat.name}
-                    </div>
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
+                    <ProductImage
+                      url={cat.cover}
+                      alt={cat.name}
+                      width={700}
+                      className="absolute inset-0 w-full h-full group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 pointer-events-none" />
                   </div>
                   <h3 className="text-xl font-display font-bold text-winniep-espresso group-hover:text-winniep-copper transition-colors">
                     {cat.name}
@@ -92,7 +94,7 @@ export default async function HomePage() {
 
           {products.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-              {products.slice(0, 8).map((product) => (
+              {products.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
@@ -112,16 +114,7 @@ export default async function HomePage() {
       <section className="w-full px-4 md:px-8 py-16 md:py-24 bg-white">
         <div className="max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           <div className="relative aspect-square bg-winniep-ivory rounded-2xl overflow-hidden shadow-inner">
-            {products[1]?.images[0]?.url || products[0]?.images[0]?.url ? (
-              <ProductImage
-                url={products[1]?.images[0]?.url ?? products[0]?.images[0]?.url}
-                alt="WinnieP lifestyle"
-                width={900}
-                className="absolute inset-0 w-full h-full"
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-winniep-espresso opacity-20 font-display italic">WinnieP</div>
-            )}
+            <ProductImage url={brandImage} alt="WinnieP lifestyle" width={900} className="absolute inset-0 w-full h-full" />
           </div>
           <div className="space-y-6">
             <h2 className="text-3xl md:text-4xl font-display font-bold text-winniep-espresso">Elevating Everyday Living.</h2>

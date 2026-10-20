@@ -19,6 +19,8 @@ create table if not exists categories (
   name        text not null unique,
   slug        text not null unique,
   description text,
+  image_url   text,          -- optional cover photo shown on the home page
+  image_public_id text,      -- Cloudinary id of that photo
   is_visible  boolean not null default true,
   sort_order  integer not null default 0,
   created_at  timestamptz not null default now()
@@ -133,3 +135,7 @@ insert into categories (name, slug, sort_order) values
   ('Electronics', 'electronics', 2),
   ('Décor',       'decor',       3)
 on conflict (slug) do nothing;
+
+-- ───────── Upgrade for databases created before category images existed (safe to re-run) ─────────
+alter table categories add column if not exists image_url text;
+alter table categories add column if not exists image_public_id text;

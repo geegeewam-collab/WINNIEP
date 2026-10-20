@@ -3,15 +3,18 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
+import { ProductImage } from '@/components/ui/ProductImage';
 import { Toggle } from './Toggle';
+import { getUploadSignature, uploadToCloudinary } from './upload';
 import { cardClass, dangerBtn, inputClass, labelClass, smallBtn } from './styles';
 import type { Category } from '@/lib/types';
 
-type Row = Category & { product_count: number };
+/** `fallback` = the product photo the shop shows when this category has no picture of its own. */
+export type CategoryRow = Category & { product_count: number; fallback: string | null };
 
-export function CategoriesManager({ initial }: { initial: Row[] }) {
+export function CategoriesManager({ initial }: { initial: CategoryRow[] }) {
   const router = useRouter();
-  const [rows, setRows] = useState<Row[]>(initial);
+  const [rows, setRows] = useState<CategoryRow[]>(initial);
   const [drafts, setDrafts] = useState<Record<string, { name: string; description: string }>>({});
   const [newName, setNewName] = useState('');
   const [newDescription, setNewDescription] = useState('');
@@ -32,7 +35,7 @@ export function CategoriesManager({ initial }: { initial: Row[] }) {
     setError('');
     try {
       const json = await call('/api/admin/categories', 'POST', { name: newName.trim(), description: newDescription.trim() });
-      setRows((r) => [...r, { ...(json.category as Category), product_count: 0 }]);
+      setRows((r) => [...r, { ...(json.category as Category), product_count: 0, fallback: null }]);
       setNewName('');
       setNewDescription('');
       router.refresh();
@@ -43,7 +46,7 @@ export function CategoriesManager({ initial }: { initial: Row[] }) {
     }
   }
 
-  async function save(row: Row) {
+  async function save(row: CategoryRow) {
     const draft = drafts[row.id];
     if (!draft) return;
     setBusy(row.id);
@@ -64,7 +67,7 @@ export function CategoriesManager({ initial }: { initial: Row[] }) {
     }
   }
 
-  async function setVisible(row: Row, value: boolean) {
+  async function setVisible(row: CategoryRow, value: boolean) {
     setBusy(row.id);
     setError('');
     try {
@@ -78,7 +81,42 @@ export function CategoriesManager({ initial }: { initial: Row[] }) {
     }
   }
 
-  async function remove(row: Row) {
+  async function uploadImage(row: CategoryRow, file: File | undefined) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setError('Please choose a photo (JPG, PNG or WebP).');
+      return;
+    }
+    setBusy(row.id);
+    setError('');
+    try {
+      const sig = await getUploadSignature();
+      const uploaded = await uploadToCloudinary(file, sig);
+      await call(`/api/admin/categories/${row.id}`, 'PATCH', { image_url: uploaded.url, image_public_id: uploaded.public_id });
+      setRows((r) => r.map((x) => (x.id === row.id ? { ...x, image_url: uploaded.url, image_public_id: uploaded.public_id } : x)));
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Upload failed.');
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function removeImage(row: CategoryRow) {
+    setBusy(row.id);
+    setError('');
+    try {
+      await call(`/api/admin/categories/${row.id}`, 'PATCH', { image_url: null });
+      setRows((r) => r.map((x) => (x.id === row.id ? { ...x, image_url: null, image_public_id: null } : x)));
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong.');
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function remove(row: CategoryRow) {
     const extra = row.product_count > 0 ? ` Its ${row.product_count} product${row.product_count === 1 ? '' : 's'} will become uncategorised.` : '';
     if (!window.confirm(`Delete the "${row.name}" category?${extra}`)) return;
     setBusy(row.id);
@@ -108,7 +146,10 @@ export function CategoriesManager({ initial }: { initial: Row[] }) {
             <input id="cat-desc" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} className={inputClass} placeholder="Shown at the top of the category page" />
           </div>
         </div>
-        <Button type="submit" variant="primary" className="py-2 text-sm" isLoading={busy === 'new'}>Add category</Button>
+        <div className="flex flex-wrap items-center gap-4">
+          <Button type="submit" variant="primary" className="py-2 text-sm" isLoading={busy === 'new'}>Add category</Button>
+          <p className="text-xs text-winniep-textSecondary">After adding it, upload its picture from the list below.</p>
+        </div>
       </form>
 
       {error && <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3" role="alert">{error}</p>}
@@ -119,24 +160,56 @@ export function CategoriesManager({ initial }: { initial: Row[] }) {
           const draft = drafts[row.id] ?? { name: row.name, description: row.description ?? '' };
           const dirty = drafts[row.id] !== undefined && (draft.name.trim() !== row.name || draft.description.trim() !== (row.description ?? ''));
           const setDraft = (patch: Partial<typeof draft>) => setDrafts((d) => ({ ...d, [row.id]: { ...draft, ...patch } }));
+          const cover = row.image_url || row.fallback;
           return (
-            <div key={row.id} className={`${cardClass} !p-4 space-y-3 ${busy === row.id ? 'opacity-60' : ''}`}>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <input value={draft.name} onChange={(e) => setDraft({ name: e.target.value })} className={inputClass} aria-label="Category name" />
-                <input value={draft.description} onChange={(e) => setDraft({ description: e.target.value })} className={`${inputClass} sm:col-span-2`} placeholder="Description (optional)" aria-label="Category description" />
-              </div>
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <p className="text-xs text-winniep-textSecondary">
-                  /category/{row.slug} · {row.product_count} product{row.product_count === 1 ? '' : 's'}
+            <div key={row.id} className={`${cardClass} !p-4 flex flex-col sm:flex-row gap-4 ${busy === row.id ? 'opacity-60' : ''}`}>
+              {/* picture shown on the home page */}
+              <div className="shrink-0 sm:w-36 space-y-2">
+                <div className="relative aspect-square w-28 sm:w-full rounded-lg overflow-hidden bg-winniep-ivory border border-winniep-border">
+                  <ProductImage url={cover} alt="No picture yet" width={300} className="absolute inset-0 w-full h-full" />
+                </div>
+                <p className="text-[11px] text-winniep-textSecondary leading-snug">
+                  {row.image_url ? 'Category picture' : row.fallback ? 'Using a product photo — upload one to replace it' : 'No picture yet'}
                 </p>
-                <div className="flex items-center gap-4">
-                  <div className="w-36">
-                    <Toggle checked={row.is_visible} disabled={busy === row.id} onChange={(v) => setVisible(row, v)} label={row.is_visible ? 'Visible' : 'Hidden'} />
-                  </div>
-                  {dirty && (
-                    <button type="button" className={smallBtn} disabled={busy === row.id} onClick={() => save(row)}>Save changes</button>
+                <div className="flex flex-wrap gap-2">
+                  <label className={`${smallBtn} cursor-pointer ${busy === row.id ? 'pointer-events-none opacity-50' : ''}`}>
+                    {row.image_url ? 'Change' : 'Upload'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      aria-label={`Upload picture for ${row.name}`}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = '';
+                        void uploadImage(row, file);
+                      }}
+                    />
+                  </label>
+                  {row.image_url && (
+                    <button type="button" className={smallBtn} disabled={busy === row.id} onClick={() => removeImage(row)}>Remove</button>
                   )}
-                  <button type="button" className={`${dangerBtn} !px-3 !py-1.5 !text-xs`} disabled={busy === row.id} onClick={() => remove(row)}>Delete</button>
+                </div>
+              </div>
+
+              <div className="grow min-w-0 space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <input value={draft.name} onChange={(e) => setDraft({ name: e.target.value })} className={inputClass} aria-label="Category name" />
+                  <input value={draft.description} onChange={(e) => setDraft({ description: e.target.value })} className={`${inputClass} sm:col-span-2`} placeholder="Description (optional)" aria-label="Category description" />
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <p className="text-xs text-winniep-textSecondary">
+                    /category/{row.slug} · {row.product_count} product{row.product_count === 1 ? '' : 's'}
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <div className="w-36">
+                      <Toggle checked={row.is_visible} disabled={busy === row.id} onChange={(v) => setVisible(row, v)} label={row.is_visible ? 'Visible' : 'Hidden'} />
+                    </div>
+                    {dirty && (
+                      <button type="button" className={smallBtn} disabled={busy === row.id} onClick={() => save(row)}>Save changes</button>
+                    )}
+                    <button type="button" className={`${dangerBtn} !px-3 !py-1.5 !text-xs`} disabled={busy === row.id} onClick={() => remove(row)}>Delete</button>
+                  </div>
                 </div>
               </div>
             </div>

@@ -3,7 +3,7 @@ import { getDb } from '@/lib/supabase';
 import { fail, firstIssue, isUniqueViolation, ok } from '@/lib/api';
 import { ProductCreateSchema } from '@/lib/validations';
 import { slugify } from '@/lib/utils';
-import { uniqueSlug } from '@/lib/slug';
+import { FEATURED_LIMIT_MESSAGE, featuredLimitReached, uniqueSlug } from '@/lib/slug';
 
 export async function POST(request: Request) {
   const denied = await adminGuard();
@@ -13,6 +13,8 @@ export async function POST(request: Request) {
     const parsed = ProductCreateSchema.safeParse(body);
     if (!parsed.success) return fail(firstIssue(parsed.error));
     const p = parsed.data;
+
+    if (p.is_featured && (await featuredLimitReached())) return fail(FEATURED_LIMIT_MESSAGE, 409);
 
     const slug = await uniqueSlug('products', slugify(p.slug || p.name) || 'product');
     const { data, error } = await getDb()

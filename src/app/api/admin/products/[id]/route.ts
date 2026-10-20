@@ -3,7 +3,7 @@ import { getDb } from '@/lib/supabase';
 import { fail, firstIssue, isUniqueViolation, ok } from '@/lib/api';
 import { ProductPatchSchema } from '@/lib/validations';
 import { slugify, UUID_RE } from '@/lib/utils';
-import { uniqueSlug } from '@/lib/slug';
+import { FEATURED_LIMIT_MESSAGE, featuredLimitReached, uniqueSlug } from '@/lib/slug';
 import { cleanupImages } from '@/lib/product-images';
 import type { ProductImage } from '@/lib/types';
 
@@ -25,6 +25,8 @@ export async function PATCH(request: Request, { params }: Ctx) {
     const { data: existing, error: loadError } = await db.from('products').select('id, images').eq('id', id).maybeSingle();
     if (loadError) throw loadError;
     if (!existing) return fail('Product not found.', 404);
+
+    if (p.is_featured === true && (await featuredLimitReached(id))) return fail(FEATURED_LIMIT_MESSAGE, 409);
 
     const update: Record<string, unknown> = {};
     if (p.name !== undefined) update.name = p.name;

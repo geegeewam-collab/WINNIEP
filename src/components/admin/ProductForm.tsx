@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { ImageUploader } from './ImageUploader';
 import { Toggle } from './Toggle';
 import { cardClass, dangerBtn, inputClass, labelClass } from './styles';
-import { slugify } from '@/lib/utils';
+import { MAX_FEATURED_PRODUCTS, slugify } from '@/lib/utils';
 import type { Availability, Category, Product, ProductImage } from '@/lib/types';
 
 const AVAILABILITY_OPTIONS: { value: Availability; title: string; desc: string }[] = [
@@ -221,7 +221,7 @@ export function ProductForm({ categories, product }: { categories: Category[]; p
           <section className={`${cardClass} space-y-4`}>
             <h2 className="text-lg font-bold text-winniep-espresso">Visibility</h2>
             <Toggle checked={isPublished} onChange={setIsPublished} label="Published" hint="Off = hidden draft (you can still preview it)" />
-            <Toggle checked={isFeatured} onChange={setIsFeatured} label="Featured" hint="Show on the home page" />
+            <Toggle checked={isFeatured} onChange={setIsFeatured} label="Featured" hint={`Home page slideshow (max ${MAX_FEATURED_PRODUCTS})`} />
           </section>
 
           <section className={`${cardClass} space-y-3`}>

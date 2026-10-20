@@ -4,6 +4,7 @@ import { fail, firstIssue, isUniqueViolation, ok } from '@/lib/api';
 import { CategoryPatchSchema } from '@/lib/validations';
 import { slugify, UUID_RE } from '@/lib/utils';
 import { uniqueSlug } from '@/lib/slug';
+import { destroyImage } from '@/lib/cloudinary';
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -24,13 +25,27 @@ export async function PATCH(request: Request, { params }: Ctx) {
     if (c.description !== undefined) update.description = c.description || null;
     if (c.is_visible !== undefined) update.is_visible = c.is_visible;
     if (c.sort_order !== undefined) update.sort_order = c.sort_order;
+    const imageChange = c.image_url !== undefined;
+    if (imageChange) {
+      update.image_url = c.image_url || null;
+      update.image_public_id = c.image_url ? c.image_public_id ?? null : null;
+    }
     if (Object.keys(update).length === 0) return ok();
 
-    const { error } = await getDb().from('categories').update(update).eq('id', id);
+    const db = getDb();
+    let oldPublicId: string | null = null;
+    if (imageChange) {
+      const { data: before } = await db.from('categories').select('image_public_id').eq('id', id).maybeSingle();
+      oldPublicId = (before?.image_public_id as string | null | undefined) ?? null;
+    }
+
+    const { error } = await db.from('categories').update(update).eq('id', id);
     if (error) {
       if (isUniqueViolation(error)) return fail('A category with this name already exists.', 409);
       throw error;
     }
+    // The previous cover picture is no longer used anywhere — free it up on Cloudinary.
+    if (imageChange && oldPublicId && oldPublicId !== update.image_public_id) await destroyImage(oldPublicId);
     return ok();
   } catch (error) {
     console.error('[admin] update category failed', error);
@@ -45,8 +60,11 @@ export async function DELETE(_request: Request, { params }: Ctx) {
     const { id } = await params;
     if (!UUID_RE.test(id)) return fail('Category not found.', 404);
     // products.category_id is ON DELETE SET NULL, so products simply become uncategorised
-    const { error } = await getDb().from('categories').delete().eq('id', id);
+    const db = getDb();
+    const { data: existing } = await db.from('categories').select('image_public_id').eq('id', id).maybeSingle();
+    const { error } = await db.from('categories').delete().eq('id', id);
     if (error) throw error;
+    if (existing?.image_public_id) await destroyImage(existing.image_public_id as string);
     return ok();
   } catch (error) {
     console.error('[admin] delete category failed', error);

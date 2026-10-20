@@ -66,3 +66,6 @@ export function formatDate(iso: string): string {
 }
 
 export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** How many products can be featured (they form the home-page slideshow). */
+export const MAX_FEATURED_PRODUCTS = 10;

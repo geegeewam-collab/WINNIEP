@@ -30,6 +30,8 @@ export const CategorySchema = z.object({
   name: z.string().trim().min(2, 'Category name must be at least 2 characters').max(60),
   slug: z.string().trim().max(80).optional(),
   description: z.string().trim().max(500).optional(),
+  image_url: z.string().url().max(600).nullable().optional(),
+  image_public_id: z.string().min(1).max(300).nullable().optional(),
   is_visible: z.boolean().optional(),
   sort_order: z.number().int().min(0).max(1000).optional(),
 });
